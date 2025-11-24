@@ -1,0 +1,26 @@
+This txt file goes in depth to Mingi Hong's process of setting up authentcation, getting the access token, and getting the email content of the test account.
+
+The test account used was mhub_testacc745@outlook.com.
+
+To summarize, the flow of getting emails from Microsoft goes like this:
+
+1. Authenticate yourself to Microsoft and give your app the account's consent to look through their email, get access token
+2. Use the obtained access token to call the Microsoft graph API and get the email content
+
+For step 1, you need to do the following things:
+
+You must:
+-Create a microsoft account (any works, I used an outlook email)
+-Navigate to microsoft azure; This is a cloud platform management service(?) Basically, allows you to register apps & manage them.
+-Register your app, make sure to give access to all users in directories & personal accounts
+-set redirect uri to localhost, add a delegate permissions to enable Mail.Read, change authentication setting to enable public flow (unsure if this is truly necessary, I think it is but didn't get a chance to properly test)
+
+Once you've done that, you should have the microsoft azure side of things completely set up. Next on the list is creating the python scripts.
+
+The only thing you'll probably really need is installing msal, which can be achieved with pip install msal.
+
+After that, you can use the get_token template, replacing the client_id and username with the appropriate values (client id is the application id, in azure, and username is your email account).
+
+Run the python file in order to get the access token that you need. The access token should be printed out in the terminal if you're using powershell.
+
+Finally, put the access token into get_email.py and send the request. The request should return all the email contents that are needed for extraction.
