@@ -1,5 +1,7 @@
+import sys
 import json
 from openai import OpenAI
+
 client = OpenAI()
 
 def classify_email(email: dict) -> dict:
@@ -21,6 +23,9 @@ Summarize this email very briefly, do not restate. Your response should have the
     "recommended_action": "...",
     "reason": "short explanation"
 
+
+Ensure your response is in dictionary format using curly brackets, and uses a linebreak after the open curly bracket, as well as each key/value pair in the dict
+
 Urgency indicates how important it is that the user view the email, so most emails indicated as spam should be low urgency, 
 unless it indicates something like a security issue. 
 
@@ -34,16 +39,40 @@ Body: {email.get("body", "")}
         input=prompt,
     )
 
-    text_output = response.output_text
+
+    raw = response.output_text.strip()
+    #print(raw + '\n')
+    
     try:
-        result = json.loads(text_output)
+        parsed = json.loads(raw)
     except json.JSONDecodeError:
-        cleaned = text_output[text_output.find("{"): text_output.rfind("}")+1]
-        result = json.loads(cleaned)
+        parsed = {
+            "urgency": "low",
+            "spam": True,
+            "recommended_action": "ignore",
+            "reason": "Model returned unexpected output; defaulting to low importance."
+        }
 
-    return result
+    if parsed.get("spam") == "True" or parsed.get("spam") == "true":
+        parsed["spam"] = True
+    elif parsed.get("spam") == "False" or parsed.get("spam") == "false":
+        parsed["spam"] = False
 
-def main():
+    return {
+        "id": email.get("id"),
+        "from": email.get("from"),
+        "subject": email.get("subject"),
+        "body": email.get("body"),
+        "urgency": parsed.get("urgency"),
+        "spam": parsed.get("spam"),
+        "recommended_action": parsed.get("recommended_action", ""),
+        "reason": parsed.get("reason", "")
+    }
+
+
+
+
+def test1():
     email = {
         "id": "XYZ123",
         "from": "promo@weirdsite.biz",
@@ -51,7 +80,15 @@ def main():
         "body": "Click here for reward..."
     }
     result = classify_email(email)
-    print(f'\nUrgency = {result['urgency']}\nSpam = {result['spam']}\nRecommended Action = {result['recommended_action']}\nReason = {result['reason']}\n')
+    print(result)
+
+
+
+
+def main():
+    if "--test1" in sys.argv:
+        test1()
+        return
 
 if __name__ == "__main__":
     main()
