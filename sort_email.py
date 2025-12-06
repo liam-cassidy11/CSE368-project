@@ -62,7 +62,6 @@ Body: {email.get("body", "")}
         "id": email.get("id"),
         "from": email.get("from"),
         "subject": email.get("subject"),
-        "body": email.get("body"),
         "urgency": parsed.get("urgency"),
         "spam": parsed.get("spam"),
         "recommended_action": parsed.get("recommended_action", ""),
