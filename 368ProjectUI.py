@@ -4,6 +4,8 @@ import msal
 from msal import PublicClientApplication
 import requests
 
+from get_token_and_emails import create_token_app, acquire_authorization_token, get_emails
+
 #MATT'S OPENAI CODE
 client = OpenAI()
 
@@ -48,55 +50,34 @@ Body: {email.get("body", "")}
 
     return result
 
-
-#MINGI'S GET TOKEN CODE
-def get_token():
-    client_id = "f7e1e1be-526d-458a-bcef-b377558bc4ef"
-    authority = "https://login.microsoftonline.com/common/"
-    username = "mhub_testacc745@outlook.com"
-    scope = ["Mail.Read","User.Read"]
-
-    app = PublicClientApplication(
-        client_id, 
-        authority=authority
-        )
-
-    result = None
-
-    accounts = app.get_accounts(username=username)
-    if accounts:
-        result = app.acquire_token_silent(scope, account=accounts[0])
-
-    if not result:
-        result = app.acquire_token_interactive( 
-            scopes=scope)
-        
-    return result
-
-#GET EMAILS, not sure how to do this
-def get_emails(token):
-    emails = []
-    return emails
-
 #LIAM'S UI CODE
 def menu():
     print("========= EMAIL SORTER MENU =========")
-    print("1. Classify emails")
-    print("2. Quit.")
+    print("1. Authorize app & obtain authorization token")
+    print("2. Classify emails")
+    print("3. Quit.")
 
 def main():
-    token = get_token()
-    stored_emails = []
-
+    app = create_token_app()
+    access_token = ""
     while True:
         menu() #display menu options from above
         choice = input("Select an option: ")
 
         #Option 1: Classify emails
-        if choice == "1": 
-
+        if choice == "1":
+            username = input("Please type in the email account that you wish to check the emails for. If an account has been authorized previously, the process will be automatic. Otherwise, you will need to manually authorize the application.")
+            authorization_result = acquire_authorization_token(app, username, ["Mail.Read","User.Read"])
+            if "error" in authorization_result.keys():
+                print("There was either a cancellation or some sort of error during the authorization! Please try again.")
+            else:
+                access_token = authorization_result['access_token']
+                print("Access token obtained!")
+        elif choice == "2": 
             #Get emails
-            emails = get_emails(token)
+            emails = get_emails(access_token)
+            if emails == -1:
+                print("There was an error obtaining the emails! Please refresh your access token, as that is most likely the problem.")
 
             #Classify emails
             
@@ -115,7 +96,7 @@ def main():
                 print("-------------------------------------------")
 
         #Option 2: quit
-        elif choice == "2":
+        elif choice == "3":
             print("Quitting...")
             break
         else:
