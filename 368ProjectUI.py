@@ -21,7 +21,8 @@ def classify_email(email: dict) -> dict:
 
     prompt = f"""
 You are an email assistant for a busy user, and your job is to help classify and sort incoming emails.
-Summarize this email very briefly, do not restate. Your response should have the following structure:
+Summarize this email very briefly, do not restate. Respond ONLY with a valid JSON object (no extra text).
+Your response should have the following structure:
 
     "urgency": "high/medium/low",
     "spam": "True/False",
@@ -64,7 +65,7 @@ def main():
         menu() #display menu options from above
         choice = input("Select an option: ")
 
-        #Option 1: Classify emails
+        #Option 1: Authorization
         if choice == "1":
             username = input("Please type in the email account that you wish to check the emails for. If an account has been authorized previously, the process will be automatic. Otherwise, you will need to manually authorize the application.")
             authorization_result = acquire_authorization_token(app, username, ["Mail.Read","User.Read"])
@@ -73,6 +74,7 @@ def main():
             else:
                 access_token = authorization_result['access_token']
                 print("Access token obtained!")
+        #Option 2: Classify emails
         elif choice == "2": 
             #Get emails
             emails = get_emails(access_token)
@@ -84,18 +86,18 @@ def main():
             print("\nClassifying emails...\n")
 
             for email in emails:
-                print(f"Email from: {email['from']}")
-                print(f"Subject: {email['subject']}")
-
+                
                 classifier = classify_email(email)
 
+                print(f"Email from: {((email['from'])['emailAddress'])['address']} ({((email['from'])['emailAddress'])['name']})")
+                print(f"Subject: {email['subject']}")
                 print("Urgency:", classifier["urgency"])
                 print("Spam:", classifier["spam"])
                 print("Action:", classifier["recommended_action"])
                 print("Reason:", classifier["reason"])
                 print("-------------------------------------------")
 
-        #Option 2: quit
+        #Option 3: quit
         elif choice == "3":
             print("Quitting...")
             break
