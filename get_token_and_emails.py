@@ -45,5 +45,6 @@ def get_emails(access_token):
     response = requests.get(url, headers=headers)
     if response.ok == False: 
         return -1
-    return response
+    
+    return response.json().get("value", [])
 
