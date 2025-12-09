@@ -48,3 +48,15 @@ def get_emails(access_token):
     
     return response.json().get("value", [])
 
+
+def main():
+    app = create_token_app()
+    username = "mhub_testacc745@outlook.com"
+    scope = ["Mail.Read","User.Read"]
+    authorization_result = acquire_authorization_token(app, username, scope)
+    access_token = authorization_result['access_token']
+    response = get_emails(access_token)
+    print(response.text)
+
+if __name__ == "__main__":
+    main()
